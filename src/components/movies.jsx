@@ -6,6 +6,7 @@ import { ListGroup } from "./common/listgGroup";
 import { getGenres } from "../services/fakeGenreService";
 import { MoviesTable } from "./moviesTable";
 import { Link, Route } from 'react-router-dom'
+import { SearchBox } from './common/searchBox'
 import _ from "lodash";
 import { MovieForm } from "./movieForm";
 
@@ -15,7 +16,9 @@ class Movies extends Component {
     genres: [],
     pageSize: 4,
     currentPage : 1,
-    sortColumn: { path : 'title', order: 'asc'}
+    sortColumn: { path : 'title', order: 'asc'},
+    searchQuery: '',
+    selectedGenre: null
   };
 
   componentDidMount() {
@@ -23,12 +26,6 @@ class Movies extends Component {
     this.setState({ movies: getMovies(), genres })
   }
 
-  handleGenreSelecte = gener => {
-    this.setState({ selectedGenre: gener, currentPage: 1 })
-
-  }
-
-  
   handleDelete = movie => {
     const movies = this.state.movies.filter(m => m._id !== movie._id);
     this.setState({ movies });
@@ -51,11 +48,24 @@ class Movies extends Component {
   }
 
   getPagedData = () => {
-    const { currentPage, pageSize, selectedGenre, movies: allMovies, sortColumn } = this.state
-    const filtered = selectedGenre && selectedGenre._id ? allMovies.filter(m => m.genre._id === selectedGenre._id) : allMovies
+    const { currentPage, pageSize, selectedGenre, movies: allMovies, sortColumn, searchQuery } = this.state
+    let filtered = allMovies
+    if(searchQuery) {
+      filtered = allMovies.filter(m => m.title.toLowerCase().startsWith(searchQuery.toLowerCase()))
+    } else if(selectedGenre && selectedGenre._id) {
+      filtered = allMovies.filter(m=> m.genre._id === selectedGenre._id)
+    }
     const sorted = _.orderBy(filtered, [sortColumn.path], [sortColumn.order])
     const movies = Paginate(sorted, currentPage, pageSize)
     return { totalCount: filtered.length, data: movies}
+  }
+
+  handleGenreSelecte = (genre) => {
+    this.setState({searchQuery: '', selectedGenre: genre, currentPage: 1})
+  }
+
+  handleSearch = (query) => {
+    this.setState({searchQuery: query, selectedGenre: null, currentPage: 1})
   }
 
   render() {
@@ -76,11 +86,11 @@ class Movies extends Component {
           />
         </div>
         <div className="col">
+        <Link className="btn btn-primary mb-3" to="/movies/new">
+          New Movie
+        </Link>
         <p>Showing {totalCount} movies in the database.</p>
-        <div className="mb-2">
-          <button className="btn btn-primary"><Link to="/movies/new" className="text-body">Add Movie</Link></button>
-          <Route path="/movies/new" component={MovieForm}></Route>
-        </div>
+        <SearchBox value={this.state.searchQuery} onChange={this.handleSearch}/>
         <MoviesTable 
         onDelete={this.handleDelete} 
         onLike={this.handleLike} 

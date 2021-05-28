@@ -1,7 +1,6 @@
 
 export const ListGroup = (props) => {
     const { items, onItemSelect, textProperty, valueProperty, selectedItem } = props
-    // console.log(selectedItem)
     return (
         <ul className="list-group">
             {
