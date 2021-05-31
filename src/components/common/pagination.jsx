@@ -1,5 +1,4 @@
 import PropTypes from 'prop-types'
-import { Link } from 'react-router-dom'
 const Pagination = ({onPageChange, itemsCount, pageSize, currentPage}) => {
         const pagesCount = Math.ceil(itemsCount / pageSize)
         if(pagesCount === 1) return null;
